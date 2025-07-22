@@ -34,6 +34,11 @@ export type Actions = {
      */
     resetTimer: () => void;
     /**
+     * 1.复杂函数: 清除计时器,并根据现有模式开始计时;
+     * 2.引入函数: clearTimer;
+     */
+    resetAndStartTimer: () => void;
+    /**
      * 1.复杂函数: 清除计时器,创造工作计时器,开始计时;
      * 2.引入函数:resetTimer, createTimer;
      */

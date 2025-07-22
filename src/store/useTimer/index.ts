@@ -4,23 +4,26 @@ import { Actions, Mode, States } from "./types";
 export const useTimer = create<States & Actions>((set, get) => ({
     isRunning: false,
     mode: Mode.Work,
-    workSeconds: 45 * 60,
-    breakSeconds: 15 * 60,
-    remainSeconds: 45 * 60,
+    // workSeconds: 45 * 60,
+    // breakSeconds: 15 * 60,
+    // remainSeconds: 45 * 60,
+    workSeconds: 5,
+    breakSeconds: 3,
+    remainSeconds: 5,
     intervalId: null,
 
     createTimer: () => {
         const { isRunning, remainSeconds, clearTimer } = get();
         // 如果已经在运行,或者已经有计时器,就返回,不要重复制造计时器
         if (isRunning || get().intervalId !== null) return;
-        // 如果计时器存在,并且剩余时间小于1秒,就清除计时器,并返回
-        // TODO 是否要把剩余时间设置为0,
-        if (get().intervalId !== null && remainSeconds < 1) {
-            clearTimer();
-            return;
-        }
 
         const intervalId = setInterval(() => {
+            if (get().remainSeconds < 1) {
+                // 重新用get调取最新值
+                clearTimer();
+                alert("Time out!");
+                return;
+            }
             set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
         }, 1000);
 
@@ -42,6 +45,12 @@ export const useTimer = create<States & Actions>((set, get) => ({
         set((state) => ({
             remainSeconds: state.mode === Mode.Work ? state.workSeconds : state.breakSeconds,
         }));
+    },
+
+    resetAndStartTimer: () => {
+        const { resetTimer, createTimer } = get();
+        resetTimer();
+        createTimer();
     },
 
     resetCreateWorkTimer: () => {
