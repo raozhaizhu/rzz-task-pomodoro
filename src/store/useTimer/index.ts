@@ -4,13 +4,17 @@ import { Actions, Mode, States } from "./types";
 export const useTimer = create<States & Actions>((set, get) => ({
     isRunning: false,
     mode: Mode.Work,
-    // workSeconds: 45 * 60,
-    // breakSeconds: 15 * 60,
-    // remainSeconds: 45 * 60,
-    workSeconds: 5,
-    breakSeconds: 3,
-    remainSeconds: 5,
+    workSeconds: 45 * 60,
+    breakSeconds: 15 * 60,
+    remainSeconds: 45 * 60,
+    // workSeconds: 5,
+    // breakSeconds: 3,
+    // remainSeconds: 5,
     intervalId: null,
+
+    setSeconds: (workSeconds: number, breakSeconds: number) => {
+        set((state) => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
+    },
 
     createTimer: () => {
         const { isRunning, remainSeconds, clearTimer } = get();

@@ -20,6 +20,7 @@ export type States = {
 };
 
 export type Actions = {
+    setSeconds: (arg0: number, agr1: number) => void;
     /**
      * 1.基础函数: 创造计时器,开始计时;
      */
