@@ -179,7 +179,8 @@ const HomePageComponent = () => {
                 </div>
                 {/* TODO 做一个给我买咖啡功能 */}
             </section>
-            <div className="flex flex-col items-center gap-4">
+            {/* 测试信息 */}
+            {/* <div className="flex flex-col items-center gap-4">
                 {isRunning ? <div>isRunning</div> : <div>notRunning</div>}
                 {intervalId !== null ? <div>interval</div> : <div>no interval</div>}
                 <div className="text-4xl font-bold">
@@ -194,7 +195,7 @@ const HomePageComponent = () => {
                 <div>hour:{hours}</div>
                 <div>minute:{minutes}</div>
                 <div>seconds:{seconds}</div>
-            </div>
+            </div> */}
         </section>
     );
 };

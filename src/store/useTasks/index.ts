@@ -129,7 +129,7 @@ export const useTasks = create<States & Actions>((set, get) => ({
 
     // TODO 完成状态持久化
 }));
-
+// TODO 我认为事务操作依旧是有必要的,进行简单的模拟事务操作,对修改这样危险的行为进行校验,尽管我们可以通过前端Block用户对ID的修改,或者干脆不给他入口
 // checkIfIdRepeated: () => {
 //     const { tasks } = get();
 
