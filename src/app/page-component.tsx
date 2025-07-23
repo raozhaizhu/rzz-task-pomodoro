@@ -10,17 +10,11 @@ import { useTheme } from "next-themes";
 import { Particles } from "@/components/ui/particles";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useTasks } from "@/store/useTasks";
 
-const CardInfo = {
-    title: "Study WEB3",
-    description: "I should finish the course of WEB3 this month.",
-    tags: ["study", "course", "web3"],
-    remark: "I hate testing!",
-    workingSeconds: 45,
-    breakingSeconds: 15,
-};
-
-const CardInfoGroup = [CardInfo, CardInfo, CardInfo];
+import { VscDebugStart } from "react-icons/vsc";
+import { VscDebugPause } from "react-icons/vsc";
+import { VscDebugContinue } from "react-icons/vsc";
 
 const HomePageComponent = () => {
     // 获取全局变量和方法
@@ -32,25 +26,33 @@ const HomePageComponent = () => {
         remainSeconds,
         intervalId,
         setSeconds,
-        createTimer,
+        createAndStartTimer,
+        pauseTimer,
         clearTimer,
-        resetTimer,
         resetAndStartTimer,
         resetCreateWorkTimer,
         resetCreateBreakTimer,
     } = useTimer();
+    const { tasks, addTask, editTask, deleteTask } = useTasks();
+
+    // 设定主题
     const { theme } = useTheme();
     const [color, setColor] = useState("#ffffff");
-
     useEffect(() => {
         setColor(theme === "dark" ? "#ffffff" : "#000000");
     }, [theme]);
-
+    // 计算数据
     const [hours, minutes, seconds] = getHoursMinutesSeconds(remainSeconds);
-
+    // 处理点击逻辑
     function handleStart(workingSeconds: number, breakingSeconds: number) {
         setSeconds(workingSeconds * 60, breakingSeconds * 60);
         resetCreateWorkTimer();
+    }
+    function handleEditDialog(id: number) {
+        console.log("handleEditDialog"); // TODO 完成函数
+    }
+    function handleDeleteDialog(id: number) {
+        console.log("handleDeleteDialog"); // TODO 完成函数
     }
 
     return (
@@ -73,42 +75,38 @@ const HomePageComponent = () => {
                         <Button onClick={resetCreateWorkTimer} className="w-24">
                             Work
                         </Button>
+
+                        {!isRunning ? (
+                            <Button onClick={resetAndStartTimer} className="w-24">
+                                <VscDebugStart />
+                            </Button>
+                        ) : intervalId !== null ? (
+                            <Button onClick={pauseTimer} className="w-24">
+                                <VscDebugPause />
+                            </Button>
+                        ) : (
+                            <Button onClick={createAndStartTimer} className="w-24">
+                                <VscDebugContinue />
+                            </Button>
+                        )}
+
                         <Button onClick={resetCreateBreakTimer} className="w-24">
                             Break
                         </Button>
-                        {isRunning ? (
-                            <Button onClick={clearTimer} className="w-24">
-                                Pause
-                            </Button>
-                        ) : remainSeconds < 1 ? (
-                            <Button onClick={resetAndStartTimer} className="w-24">
-                                Start
-                            </Button>
-                        ) : (
-                            <Button onClick={createTimer} className="w-24">
-                                Resume
-                            </Button>
-                        )}
-                        {/* <Button onClick={resetTimer} className="w-24">
-                        Reset
-                    </Button> */}
                     </div>
                 </Card>
                 {/* 任务卡片UI */}
-                <div className="flex flex-wrap justify-center gap-4">
-                    {CardInfoGroup.map(({ title, description, tags, remark, workingSeconds, breakingSeconds }) => (
-                        <Card className="w-full max-w-xs">
-                            <CardHeader className="relative">
+                <div className="w-full flex flex-wrap justify-center gap-4">
+                    {tasks.map(({ id, title, description, tags, remark, workingMinutes, breakingMinutes }) => (
+                        <Card className="w-xs flex flex-col" key={`card-${id}`}>
+                            <CardHeader className="relative flex-none">
                                 <CardTitle>{title}</CardTitle>
-                                {/* <CardDescription className="mt-2 ml-auto">
-                                    {workingSeconds} mins / {breakingSeconds} mins
-                                </CardDescription> */}
                                 <div className="absolute right-4 top-0 flex gap-1">
                                     <Tooltip>
                                         <TooltipTrigger>🕚 </TooltipTrigger>
                                         <TooltipContent>
-                                            <p>Work: {workingSeconds} mins</p>
-                                            <p>Break: {breakingSeconds} mins</p>
+                                            <p>Work: {workingMinutes} mins</p>
+                                            <p>Break: {breakingMinutes} mins</p>
                                         </TooltipContent>
                                     </Tooltip>
                                     <Tooltip>
@@ -119,46 +117,85 @@ const HomePageComponent = () => {
                                     </Tooltip>
                                 </div>
                             </CardHeader>
-                            <CardContent className="max-w-xs">
-                                <p className="text-black/75 mb-2">{description}</p>
-                                <div className="w-full flex justify-end gap-2">
-                                    {tags.map((tag) => (
-                                        <Badge variant="outline">{tag}</Badge>
-                                    ))}
-                                </div>
+
+                            <CardContent className="flex-1 flex flex-col">
+                                <p className="text-black/75 mb-2">
+                                    {description && description.length > 100
+                                        ? `${description.slice(0, 100)}...`
+                                        : description}
+                                </p>
+                                {description && description.length > 100 && (
+                                    <div className="ml-auto mb-4" key={`tooltip-${id}`}>
+                                        <Tooltip>
+                                            <TooltipTrigger>📖</TooltipTrigger>
+                                            <TooltipContent className="text-md">
+                                                <p className="break-all hyphens-auto max-w-80">{description}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </div>
+                                )}
+                                {tags.length > 0 && (
+                                    <div className="w-full flex justify-end gap-2 mt-auto">
+                                        {tags.map((tag, index) => (
+                                            <Badge variant="outline" key={`tag-${index}`}>
+                                                {tag}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
                             </CardContent>
 
-                            <CardFooter className="flex flex-col gap-2">
+                            <CardFooter className="flex-none w-full flex flex-row justify-end items-center gap-2 mt-auto">
                                 <Button
-                                    className="ml-auto"
-                                    onClick={() => handleStart(workingSeconds, breakingSeconds)}
-                                    disabled={isRunning}
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => handleDeleteDialog(id)}
+                                    disabled={intervalId !== null}
                                 >
-                                    Start
+                                    🗑️
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => handleEditDialog(id)}
+                                    disabled={intervalId !== null}
+                                >
+                                    ✏️
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => handleStart(workingMinutes, breakingMinutes)}
+                                    disabled={intervalId !== null}
+                                >
+                                    ▶️
                                 </Button>
                             </CardFooter>
                         </Card>
                     ))}
                 </div>
+                {/* TODO 做一个给我买咖啡功能 */}
             </section>
-        </section>
-    );
-};
-export default HomePageComponent;
-
-/* <div className="flex flex-col items-center gap-4">
-                    {isRunning ? <div>isRunning</div> : <div>notRunning</div>}
-                    {intervalId !== null ? <div>interval</div> : <div>no interval</div>}
-                    <div className="text-4xl font-bold">
-                        Remain
-                        <span className="text-red-700"> {remainSeconds} </span>
-                        Seconds
-                    </div>
-                    <div>Now {mode}ING </div>
-                    <div>Work Seconds : {workSeconds} S </div>
-                    <div>Break Seconds : {breakSeconds} S </div>
+            <div className="flex flex-col items-center gap-4">
+                {isRunning ? <div>isRunning</div> : <div>notRunning</div>}
+                {intervalId !== null ? <div>interval</div> : <div>no interval</div>}
+                <div className="text-4xl font-bold">
+                    Remain
+                    <span className="text-red-700"> {remainSeconds} </span>
+                    Seconds
+                </div>
+                <div>Now {mode}ING </div>
+                <div>Work Seconds : {workSeconds} S </div>
+                <div>Break Seconds : {breakSeconds} S </div>
                 <div>remainSeconds:{remainSeconds}</div>
                 <div>hour:{hours}</div>
                 <div>minute:{minutes}</div>
                 <div>seconds:{seconds}</div>
-                </div> */
+            </div>
+        </section>
+    );
+};
+export default HomePageComponent;

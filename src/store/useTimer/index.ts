@@ -4,28 +4,28 @@ import { Actions, Mode, States } from "./types";
 export const useTimer = create<States & Actions>((set, get) => ({
     isRunning: false,
     mode: Mode.Work,
-    workSeconds: 45 * 60,
-    breakSeconds: 15 * 60,
-    remainSeconds: 45 * 60,
-    // workSeconds: 5,
-    // breakSeconds: 3,
-    // remainSeconds: 5,
+    // workSeconds: 45 * 60,
+    // breakSeconds: 15 * 60,
+    // remainSeconds: 45 * 60,
+    workSeconds: 5,
+    breakSeconds: 3,
+    remainSeconds: 5,
     intervalId: null,
 
     setSeconds: (workSeconds: number, breakSeconds: number) => {
         set((state) => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
     },
 
-    createTimer: () => {
-        const { isRunning, remainSeconds, clearTimer } = get();
-        // 如果已经在运行,或者已经有计时器,就返回,不要重复制造计时器
-        if (isRunning || get().intervalId !== null) return;
+    createAndStartTimer: () => {
+        const { clearTimer } = get();
+        // 如果已经有计时器,就返回,不要重复制造计时器
+        if (get().intervalId !== null) return;
 
         const intervalId = setInterval(() => {
             if (get().remainSeconds < 1) {
                 // 重新用get调取最新值
                 clearTimer();
-                alert("Time out!");
+                alert("Time out!"); // TODO 换成function，播放音乐
                 return;
             }
             set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
@@ -42,6 +42,11 @@ export const useTimer = create<States & Actions>((set, get) => ({
         set((state) => ({ intervalId: null, isRunning: false }));
     },
 
+    pauseTimer: () => {
+        get().clearTimer();
+        set((state) => ({ isRunning: true }));
+    },
+
     resetTimer: () => {
         // 清除计时器
         get().clearTimer();
@@ -52,33 +57,33 @@ export const useTimer = create<States & Actions>((set, get) => ({
     },
 
     resetAndStartTimer: () => {
-        const { resetTimer, createTimer } = get();
+        const { resetTimer, createAndStartTimer } = get();
         resetTimer();
-        createTimer();
+        createAndStartTimer();
     },
 
     resetCreateWorkTimer: () => {
-        const { resetTimer, createTimer } = get();
+        const { resetTimer, createAndStartTimer } = get();
 
         set((state) => ({ mode: Mode.Work }));
 
         resetTimer();
-        createTimer();
+        createAndStartTimer();
     },
     resetCreateBreakTimer: () => {
-        const { resetTimer, createTimer } = get();
+        const { resetTimer, createAndStartTimer } = get();
 
         set((state) => ({ mode: Mode.Break }));
 
         resetTimer();
-        createTimer();
+        createAndStartTimer();
     },
     resetCreateToggledTimer: () => {
-        const { resetTimer, createTimer, mode } = get();
+        const { resetTimer, createAndStartTimer, mode } = get();
 
         set((state) => ({ mode: mode === Mode.Work ? Mode.Break : Mode.Work }));
 
         resetTimer();
-        createTimer();
+        createAndStartTimer();
     },
 }));

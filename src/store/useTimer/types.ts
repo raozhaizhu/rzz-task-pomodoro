@@ -20,38 +20,26 @@ export type States = {
 };
 
 export type Actions = {
+    /* -------------------------------------------------------------------------- */
+    /*                                    基础函数                                    */
+    /* -------------------------------------------------------------------------- */
     setSeconds: (arg0: number, agr1: number) => void;
-    /**
-     * 1.基础函数: 创造计时器,开始计时;
-     */
-    createTimer: () => void;
-    /**
-     * 1.基础函数: 清除计时器,不停止计时;
-     */
+
+    createAndStartTimer: () => void;
+
     clearTimer: () => void;
-    /**
-     * 1.复杂函数: 清除计时器,停止计时;
-     * 2.引入函数: clearTimer;
-     */
+    /* -------------------------------------------------------------------------- */
+    /*                                    复杂函数                                    */
+    /* -------------------------------------------------------------------------- */
+    pauseTimer: () => void;
+
     resetTimer: () => void;
-    /**
-     * 1.复杂函数: 清除计时器,并根据现有模式开始计时;
-     * 2.引入函数: clearTimer;
-     */
+
     resetAndStartTimer: () => void;
-    /**
-     * 1.复杂函数: 清除计时器,创造工作计时器,开始计时;
-     * 2.引入函数:resetTimer, createTimer;
-     */
+
     resetCreateWorkTimer: () => void;
-    /**
-     * 1.复杂函数: 清除计时器,创造休息计时器,开始计时;
-     * 2.引入函数:resetTimer, createTimer;
-     */
+
     resetCreateBreakTimer: () => void;
-    /**
-     * 1.复杂函数: 清除计时器,根据当前工作/休息状态,切换到相反计时器,开始计时;
-     * 2.引入函数:resetTimer, createTimer;
-     */
+
     resetCreateToggledTimer: () => void;
 };
