@@ -5,7 +5,7 @@ import ShiftingCountdown from "@/components/rzz-countdown-timer";
 import { useTimer } from "@/store/useTimer";
 import { getHoursMinutesSeconds } from "@/utils/get-hours-minutes-seconds";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Particles } from "@/components/ui/particles";
 import { Badge } from "@/components/ui/badge";
@@ -15,9 +15,13 @@ import { useTasks } from "@/store/useTasks";
 import { VscDebugStart } from "react-icons/vsc";
 import { VscDebugPause } from "react-icons/vsc";
 import { VscDebugContinue } from "react-icons/vsc";
+import { ActionType } from "./types";
+import { TaskDialog } from "@/components/task-dialog";
+
+import { IoAddOutline } from "react-icons/io5";
 
 const HomePageComponent = () => {
-    // 获取全局变量和方法
+    // ANCHOR 获取全局变量和方法
     const {
         isRunning,
         mode,
@@ -35,24 +39,24 @@ const HomePageComponent = () => {
     } = useTimer();
     const { tasks, addTask, editTask, deleteTask } = useTasks();
 
-    // 设定主题
+    // ANCHOR 状态
     const { theme } = useTheme();
     const [color, setColor] = useState("#ffffff");
+    const [showDialog, setShowDialog] = useState(false);
+    const [actionType, setActionType] = useState<ActionType>(ActionType.ADD);
+    const [currentTask, setCurrentTask] = useState<number | null>(null);
+
+    // ANCHOR 副作用
     useEffect(() => {
         setColor(theme === "dark" ? "#ffffff" : "#000000");
     }, [theme]);
-    // 计算数据
+
+    // ANCHOR 计算数据
     const [hours, minutes, seconds] = getHoursMinutesSeconds(remainSeconds);
-    // 处理点击逻辑
+    // ANCHOR 处理点击逻辑
     function handleStart(workingSeconds: number, breakingSeconds: number) {
         setSeconds(workingSeconds * 60, breakingSeconds * 60);
         resetCreateWorkTimer();
-    }
-    function handleEditDialog(id: number) {
-        console.log("handleEditDialog"); // TODO 完成函数
-    }
-    function handleDeleteDialog(id: number) {
-        console.log("handleDeleteDialog"); // TODO 完成函数
     }
 
     return (
@@ -65,12 +69,12 @@ const HomePageComponent = () => {
             </span>
             <Particles className="absolute inset-0" quantity={100} ease={80} color={color} refresh />
             <section className=" container mx-auto flex flex-col justify-center items-center gap-4">
-                {/* 倒计时UI + 按钮组*/}
+                {/* ANCHOR 倒计时UI + 按钮组*/}
                 <Card className="w-xs sm:w-sm md:w-md lg:w-lg xl:w-xl">
-                    {/* 倒计时UI */}
+                    {/* ANCHOR 倒计时UI */}
                     <ShiftingCountdown hours={hours} minutes={minutes} seconds={seconds} />
 
-                    {/* 按钮组 */}
+                    {/* ANCHOR 按钮组 */}
                     <div className="flex gap-2 justify-center">
                         <Button onClick={resetCreateWorkTimer} className="w-24">
                             Work
@@ -95,7 +99,7 @@ const HomePageComponent = () => {
                         </Button>
                     </div>
                 </Card>
-                {/* 任务卡片UI */}
+                {/* ANCHOR 任务卡片UI */}
                 <div className="w-full flex flex-wrap justify-center gap-4">
                     {tasks.map(({ id, title, description, tags, remark, workingMinutes, breakingMinutes }) => (
                         <Card className="w-xs flex flex-col" key={`card-${id}`}>
@@ -150,7 +154,11 @@ const HomePageComponent = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="size-8"
-                                    onClick={() => handleDeleteDialog(id)}
+                                    onClick={() => {
+                                        setCurrentTask(id);
+                                        setActionType(ActionType.DELETE);
+                                        setShowDialog(true);
+                                    }}
                                     disabled={intervalId !== null}
                                 >
                                     🗑️
@@ -159,7 +167,11 @@ const HomePageComponent = () => {
                                     variant="ghost"
                                     size="icon"
                                     className="size-8"
-                                    onClick={() => handleEditDialog(id)}
+                                    onClick={() => {
+                                        setCurrentTask(id);
+                                        setActionType(ActionType.EDIT);
+                                        setShowDialog(true);
+                                    }}
                                     disabled={intervalId !== null}
                                 >
                                     ✏️
@@ -176,11 +188,36 @@ const HomePageComponent = () => {
                             </CardFooter>
                         </Card>
                     ))}
+                    <Card className="w-xs flex justify-center items-center">
+                        <IoAddOutline
+                            size={28}
+                            className="cursor-pointer"
+                            onClick={() => {
+                                setCurrentTask(null);
+                                setActionType(ActionType.ADD);
+                                setShowDialog(true);
+                            }}
+                        />
+                    </Card>
                 </div>
                 {/* TODO 做一个给我买咖啡功能 */}
             </section>
-            {/* 测试信息 */}
-            {/* <div className="flex flex-col items-center gap-4">
+            <TaskDialog
+                showDialog={showDialog}
+                setShowDialog={setShowDialog}
+                actionType={actionType}
+                currentTask={currentTask}
+            />
+        </section>
+    );
+};
+export default HomePageComponent;
+
+{
+    /* ANCHOR 测试信息 */
+}
+{
+    /* <div className="flex flex-col items-center gap-4">
                 {isRunning ? <div>isRunning</div> : <div>notRunning</div>}
                 {intervalId !== null ? <div>interval</div> : <div>no interval</div>}
                 <div className="text-4xl font-bold">
@@ -195,8 +232,5 @@ const HomePageComponent = () => {
                 <div>hour:{hours}</div>
                 <div>minute:{minutes}</div>
                 <div>seconds:{seconds}</div>
-            </div> */}
-        </section>
-    );
-};
-export default HomePageComponent;
+            </div> */
+}

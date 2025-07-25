@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export type States = {
     tasks: CardInfoSchemaClient[]; // Better to nest the array in an object for future expansion
@@ -8,6 +8,8 @@ export type States = {
 export type Actions = {
     checkIfTheTaskExist: (id: number) => boolean;
     checkIfTasksLengthLessThan30: () => boolean;
+    getLatestId: () => number;
+    getTask: (id: number) => TasksResponse;
     addTask: (cardInfo: CardInfoSchemaClient) => TasksResponse;
     editTask: (cardInfo: CardInfoSchemaClient) => TasksResponse;
     deleteTask: (id: number) => TasksResponse;
@@ -16,9 +18,12 @@ export type Actions = {
 export type TasksResponse = {
     success: boolean;
     message: string;
+    data?: CardInfoSchemaClient;
 };
 
 export const cardInfoSchemaClient = z.object({
+    id: z.number().int().min(0, { message: "The id number must be greater than 0" }),
+
     title: z.string().trim().min(1, { message: "Title is required" }),
     description: z
         .string()
@@ -27,7 +32,6 @@ export const cardInfoSchemaClient = z.object({
         .optional(),
     remark: z.string().trim().max(300, { message: "The length of remark can't exceed 300 characters" }).optional(),
 
-    id: z.number().int(),
     workingMinutes: z
         .number()
         .int()
@@ -38,8 +42,12 @@ export const cardInfoSchemaClient = z.object({
         .int()
         .min(1, { message: "It can't be smaller than 1" })
         .max(1439, { message: "It can't be bigger than 1439" }),
-    completedTimes: z.number().int().default(0),
-    targetTimes: z.number().int().max(24, { message: "The target of times be can't exceed 24 times" }),
+    completedTimes: z.number().int(),
+    targetTimes: z
+        .number()
+        .int()
+        .min(1, { message: "The target of times must be greater than 0" })
+        .max(24, { message: "The target of times be can't exceed 24 times" }),
 
     tags: z
         .array(
@@ -49,8 +57,7 @@ export const cardInfoSchemaClient = z.object({
                 .min(1, { message: "The length of tag can't be smaller than 1 character" })
                 .max(10, { message: "The length of tag can't exceed 10 character" })
         )
-        .max(5, { message: "The amount of tags can't exceed 5" })
-        .default([]),
+        .max(5, { message: "The amount of tags can't exceed 5" }),
 });
 
 export type CardInfoSchemaClient = z.infer<typeof cardInfoSchemaClient>;
@@ -94,7 +101,17 @@ export const useTasks = create<States & Actions>((set, get) => ({
 
         return checkIfTasksLengthLessThan30;
     },
-    // TODO GET函数忘记做了
+    getLatestId: () => {
+        const tasks = get().tasks;
+        if (tasks.length === 0) return 0;
+        const id = tasks.reduce((acc, task) => (task.id > acc ? task.id : acc), 0);
+        return id;
+    },
+    getTask: (id: number) => {
+        const task = get().tasks.find((task) => task.id === id);
+        if (!task) return { success: false, message: "The task is not existed" };
+        return { success: true, message: "The task has been found successfully", data: task };
+    },
     addTask: (cardInfo: CardInfoSchemaClient): TasksResponse => {
         const { id } = cardInfo;
         if (get().checkIfTheTaskExist(id)) return { success: false, message: "The title of task can't be repeated" };
