@@ -49,7 +49,6 @@ export const useTasks = create<States & Actions>()(
     persist(
         (set, get) => ({
             tasks: [
-                // HACK 重写placeholder让整个设定更易懂
                 {
                     id: 0,
                     title: "Study French",
@@ -157,6 +156,10 @@ export const useTasks = create<States & Actions>()(
 
             resetIfNewDay: () => {
                 const today = getLocalDateString();
+                const last = get().lastResetDate;
+
+                // HACK It's a client console.log, it should be commented out before deployment.
+                console.log("*** [resetIfNewDay] today:", today, "last:", last, "***");
                 if (get().lastResetDate !== today) {
                     get().resetCompletedTimes();
                 }
@@ -180,7 +183,6 @@ export const useTasks = create<States & Actions>()(
     )
 );
 
-export { EditingStatus };
 // 我认为事务操作依旧是有必要的,进行简单的模拟事务操作,对修改这样危险的行为进行校验,尽管我们可以通过前端Block用户对ID的修改,或者干脆不给他入口
 // 但必要性不大,所以不做了
 // checkIfIdRepeated: () => {

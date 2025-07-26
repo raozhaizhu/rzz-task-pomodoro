@@ -39,7 +39,8 @@ const HomePageComponent = () => {
         resetCreateBreakTimer,
     } = useTimer();
 
-    const { tasks, getTask, setEditingTask, countingTask, setCountingTask, setEditingStatus } = useTasks();
+    const { tasks, getTask, setEditingTask, countingTask, setCountingTask, setEditingStatus, lastResetDate } =
+        useTasks();
 
     // ANCHOR 状态
     const { theme } = useTheme();
@@ -63,19 +64,19 @@ const HomePageComponent = () => {
     }
 
     return (
-        <section className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background">
-            <SpringMotion modeAndCountingTask={`${mode + countingTask}`} className="mb-24">
+        <section className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background mb-4">
+            <SpringMotion modeAndCountingTask={`${mode + countingTask}`} className="mb-12 lg:mb-24 mt-12">
                 <span
                     className="pointer-events-none whitespace-pre-wrap 
-            bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10"
+            bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-4xl lg:text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10"
                 >
                     NOW : {mode}ING
                 </span>
             </SpringMotion>
             <Particles className="absolute inset-0" quantity={100} ease={80} color={color} refresh />
-            <section className=" container mx-auto flex flex-col justify-center items-center gap-4">
+            <section className=" container md:mx-auto flex flex-col justify-center items-center gap-4 ">
                 {/* ANCHOR 倒计时UI + 按钮组*/}
-                <Card className="w-xs sm:w-sm md:w-md lg:w-lg xl:w-xl">
+                <Card className="min-w-xs sm:w-sm md:w-md lg:w-lg xl:w-xl">
                     {/* ANCHOR 倒计时UI */}
                     <ShiftingCountdown
                         hours={hours}
@@ -258,5 +259,9 @@ export default HomePageComponent;
                 <div>hour:{hours}</div>
                 <div>minute:{minutes}</div>
                 <div>seconds:{seconds}</div>
+                <div>            {lastResetDate}
+:{            {lastResetDate}
+}</div>
+
             </div> */
 }

@@ -27,7 +27,7 @@ export default function RootLayout({
         <html lang="en">
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased `}>
                 <main className="w-full min-h-screen">{children}</main>
-                <Toaster />
+                <Toaster position="top-center" />
             </body>
         </html>
     );

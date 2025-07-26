@@ -89,7 +89,7 @@ export const TaskDialog = ({
     return (
         <>
             <Dialog open={showDialog} onOpenChange={setShowDialog}>
-                <DialogContent>
+                <DialogContent className="max-h-[calc(100vh-100px)] overflow-auto">
                     <DialogHeader>
                         <DialogTitle>{editingStatus} Task</DialogTitle>
                         <DialogDescription className="text-black/70 mt-2">
@@ -277,15 +277,15 @@ export const TaskDialog = ({
                                     </FormItem>
                                 )}
                             />
-                            <DialogFooter>
+                            <DialogFooter className="flex flex-row justify-end">
                                 <DialogClose asChild>
-                                    <Button variant="outline" className="w-24">
+                                    <Button variant="outline" className="w-24 ">
                                         Cancel
                                     </Button>
                                 </DialogClose>
                                 <Button
                                     type="submit"
-                                    className="w-24"
+                                    className="w-24 "
                                     variant={editingStatus === EditingStatus.DELETE ? "destructive" : "default"}
                                 >
                                     {editingStatus}
