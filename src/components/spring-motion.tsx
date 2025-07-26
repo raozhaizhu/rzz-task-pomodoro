@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
 import { useWindowSize } from "@/hooks/use-window-size";
@@ -12,20 +12,24 @@ interface SpringMotionProps {
 }
 
 const SpringMotion = ({ children, className, modeAndCountingTask }: SpringMotionProps) => {
+    const [responsiveY, setResponsiveY] = useState<number>(0);
     const { width } = useWindowSize();
-
-    const responsiveY = width !== undefined && width < 768 ? 15 : 50;
+    useEffect(() => {
+        if (width !== undefined) {
+            setResponsiveY(width <= 768 ? 0 : 50);
+        }
+    }, [width]);
 
     return (
         <>
             <motion.div
-                key={modeAndCountingTask}
+                key={`${modeAndCountingTask}-${responsiveY}`}
                 className={cn(className)}
                 initial={{ opacity: 0, y: responsiveY }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{
                     delay: 0.2,
-                    duration: 0.8,
+                    duration: 0.5,
                     // ease: "easeIn",
                     type: "spring",
                     stiffness: 100,

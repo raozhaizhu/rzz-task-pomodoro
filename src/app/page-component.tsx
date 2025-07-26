@@ -11,6 +11,7 @@ import { Particles } from "@/components/ui/particles";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useTasks } from "@/store/useTasks";
+
 import { VscDebugStart } from "react-icons/vsc";
 import { VscDebugPause } from "react-icons/vsc";
 import { VscDebugContinue } from "react-icons/vsc";
@@ -39,7 +40,7 @@ const HomePageComponent = () => {
         resetCreateBreakTimer,
     } = useTimer();
 
-    const { tasks, getTask, setEditingTask, countingTask, setCountingTask, setEditingStatus } = useTasks();
+    const { tasks, getTask, editingTask, setEditingTask, countingTask, setCountingTask, setEditingStatus } = useTasks();
 
     // ANCHOR 状态
     const { theme } = useTheme();
@@ -124,7 +125,10 @@ const HomePageComponent = () => {
                             completedTimes,
                             targetTimes,
                         }) => (
-                            <Card className="w-full md:flex-1 flex flex-col overflow-hidden " key={`card-${id}`}>
+                            <Card
+                                className="w-full md:flex-1 md:max-w-1/2 md:min-w-[calc(30vw)] flex flex-col overflow-hidden "
+                                key={`card-${id}`}
+                            >
                                 <CardHeader className="relative flex-none">
                                     <CardTitle>{title}</CardTitle>
                                     <div className="absolute right-4 top-0 flex gap-1">
@@ -220,13 +224,14 @@ const HomePageComponent = () => {
                         )
                     )}
                     {/* 空白卡片,用于增加新任务 */}
-                    <Card className="w-full md:flex-1  flex justify-center items-center">
+                    <Card className="w-full md:flex-1 md:max-w-1/2 md:min-w-[calc(30vw)] flex justify-center items-center">
                         <IoAddOutline
                             size={28}
                             className="cursor-pointer"
                             onClick={() => {
+                                const latestId = useTasks.getState().getLatestId();
                                 setEditingStatus(EditingStatus.ADD);
-                                setEditingTask(null);
+                                setEditingTask(latestId + 1);
                                 setShowDialog(true);
                             }}
                         />
@@ -247,6 +252,7 @@ const HomePageComponent = () => {
                 <div>Now {mode}ING </div>
                 <div>remainSeconds:{remainSeconds}</div>
                 <div>{countingTask ?? "no task"}</div>
+                <div>{editingTask}</div>
             </div> */}
         </section>
     );

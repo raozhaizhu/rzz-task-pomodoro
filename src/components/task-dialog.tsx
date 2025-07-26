@@ -21,13 +21,11 @@ export const TaskDialog = ({
     setShowDialog: Dispatch<SetStateAction<boolean>>;
     intervalId: NodeJS.Timeout | null;
 }) => {
-    const { editingTask, editingStatus, getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
+    const { editingTask, editingStatus, addTask, editTask, deleteTask, getTask } = useTasks();
     const [showAlertDialog, setShowAlertDialog] = useState(false);
 
-    const latestId = getLatestId();
-
     const defaultValues: CardInfoSchemaClient = {
-        id: latestId + 1,
+        id: -1,
         title: "",
         description: "",
         remark: "",
@@ -47,12 +45,16 @@ export const TaskDialog = ({
 
     useEffect(() => {
         if (editingTask !== null) {
-            const { data } = getTask(editingTask);
-            reset(data ?? defaultValues);
+            if (editingStatus === EditingStatus.ADD) {
+                reset({ ...defaultValues, id: editingTask });
+            } else {
+                const { data } = getTask(editingTask);
+                reset(data ?? defaultValues);
+            }
         } else {
             reset(defaultValues);
         }
-    }, [editingTask]);
+    }, [editingTask, editingStatus]);
 
     const isSubmitting = form.formState.isSubmitting;
     const canNotModify = intervalId !== null || isSubmitting || editingStatus === EditingStatus.DELETE;
