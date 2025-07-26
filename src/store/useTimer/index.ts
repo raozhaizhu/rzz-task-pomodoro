@@ -1,13 +1,15 @@
 import { create } from "zustand";
 import { Actions, Mode, States, ToggleBehavior } from "./types";
 import { useTasks } from "@/store/useTasks";
-// 处理,时间到了以后,提高次数,切换状态,重设时间,播放音效
+import { persist } from "zustand/middleware";
+
 function handleTimeOut(id: number | null, mode: Mode) {
     const startWorkSound = new Audio("/sounds/startWork.wav");
     const startBreakSound = new Audio("/sounds/startBreak.wav");
 
     const { setCompletedTimePlus1 } = useTasks.getState();
-    const { switchMode, resetCreateBreakTimer, toggleBehavior, clearTimer, resetAndStartTimer } = useTimer.getState();
+    const { switchMode, resetCreateBreakTimer, resetCreateWorkTimer, toggleBehavior, clearTimer, resetAndStartTimer } =
+        useTimer.getState();
 
     if (id !== null) {
         setCompletedTimePlus1(id);
@@ -32,6 +34,7 @@ function handleTimeOut(id: number | null, mode: Mode) {
         if (mode === Mode.WORK) {
             resetCreateBreakTimer(id);
         } else {
+            resetCreateWorkTimer(id);
             clearTimer();
         }
     }
@@ -41,100 +44,111 @@ function handleTimeOut(id: number | null, mode: Mode) {
         resetAndStartTimer(id);
     }
 }
-export const useTimer = create<States & Actions>((set, get) => ({
-    isRunning: false,
-    mode: Mode.WORK,
-    // workSeconds: 45 * 60,
-    // breakSeconds: 15 * 60,
-    // remainSeconds: 45 * 60,
-    // HACK 这里改了测试环境,到时候部署时候记得改回来
-    workSeconds: 5,
-    breakSeconds: 3,
-    remainSeconds: 5,
-    intervalId: null,
-    toggleBehavior: ToggleBehavior.AUTO,
+export const useTimer = create<States & Actions>()(
+    persist(
+        (set, get) => ({
+            isRunning: false,
+            mode: Mode.WORK,
+            workSeconds: 45 * 60,
+            breakSeconds: 15 * 60,
+            remainSeconds: 45 * 60,
+            // HACK 这里改了测试环境,到时候部署时候记得改回来
+            // workSeconds: 5,
+            // breakSeconds: 3,
+            // remainSeconds: 5,
+            intervalId: null,
+            toggleBehavior: ToggleBehavior.AUTO,
 
-    setToggleBehavior: (behavior: ToggleBehavior) => {
-        set(() => ({ toggleBehavior: behavior }));
-    },
+            setToggleBehavior: (behavior: ToggleBehavior) => {
+                set(() => ({ toggleBehavior: behavior }));
+            },
 
-    switchMode: () => {
-        const { mode } = get();
+            switchMode: () => {
+                const { mode } = get();
 
-        set(() => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
-    },
+                set(() => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
+            },
 
-    setSeconds: (workSeconds: number, breakSeconds: number) => {
-        set(() => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
-    },
+            setSeconds: (workSeconds: number, breakSeconds: number) => {
+                set(() => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
+            },
 
-    createAndStartTimer: (id: number | null) => {
-        const { mode } = get();
-        // 如果已经有计时器,就返回,不要重复制造计时器
-        if (get().intervalId !== null) return;
+            createAndStartTimer: (id: number | null) => {
+                const { mode } = get();
+                // 如果已经有计时器,就返回,不要重复制造计时器
+                if (get().intervalId !== null) return;
 
-        const intervalId = setInterval(() => {
-            if (get().remainSeconds < 1) {
-                // 重新用get调取最新值
-                handleTimeOut(id, mode);
-                return;
-            }
-            set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
-        }, 1000);
+                get().intervalId = setInterval(() => {
+                    if (get().remainSeconds < 1) {
+                        // 重新用get调取最新值
+                        handleTimeOut(id, mode);
+                        return;
+                    }
+                    set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
+                }, 1000);
 
-        set(() => ({ intervalId: intervalId, isRunning: true }));
-    },
+                set(() => ({ isRunning: true }));
+            },
 
-    clearTimer: () => {
-        const { intervalId } = get();
-        // 如果没有计时器,直接返回
-        if (!intervalId) return;
-        clearInterval(intervalId);
-        set(() => ({ intervalId: null, isRunning: false }));
-    },
+            clearTimer: () => {
+                const { intervalId } = get();
+                // 如果没有计时器,直接返回
+                if (!intervalId) return;
+                clearInterval(intervalId);
+                set(() => ({ intervalId: null, isRunning: false }));
+            },
 
-    pauseTimer: () => {
-        get().clearTimer();
-        set(() => ({ isRunning: true }));
-    },
+            pauseTimer: () => {
+                get().clearTimer();
+                set(() => ({ isRunning: true }));
+            },
 
-    resetTimer: () => {
-        // 清除计时器
-        get().clearTimer();
-        // 然后重设时间为初始值
-        set((state) => ({
-            remainSeconds: state.mode === Mode.WORK ? state.workSeconds : state.breakSeconds,
-        }));
-    },
+            resetTimer: () => {
+                // 清除计时器
+                get().clearTimer();
+                // 然后重设时间为初始值
+                set((state) => ({
+                    remainSeconds: state.mode === Mode.WORK ? state.workSeconds : state.breakSeconds,
+                }));
+            },
 
-    resetAndStartTimer: (id: number | null) => {
-        const { resetTimer, createAndStartTimer } = get();
-        resetTimer();
-        createAndStartTimer(id);
-    },
+            resetAndStartTimer: (id: number | null) => {
+                const { resetTimer, createAndStartTimer } = get();
+                resetTimer();
+                createAndStartTimer(id);
+            },
 
-    resetCreateWorkTimer: (id: number | null) => {
-        const { resetTimer, createAndStartTimer } = get();
+            resetCreateWorkTimer: (id: number | null) => {
+                const { resetTimer, createAndStartTimer } = get();
 
-        set(() => ({ mode: Mode.WORK }));
+                set(() => ({ mode: Mode.WORK }));
 
-        resetTimer();
-        createAndStartTimer(id);
-    },
-    resetCreateBreakTimer: (id: number | null) => {
-        const { resetTimer, createAndStartTimer } = get();
+                resetTimer();
+                createAndStartTimer(id);
+            },
+            resetCreateBreakTimer: (id: number | null) => {
+                const { resetTimer, createAndStartTimer } = get();
 
-        set(() => ({ mode: Mode.BREAK }));
+                set(() => ({ mode: Mode.BREAK }));
 
-        resetTimer();
-        createAndStartTimer(id);
-    },
-    resetCreateToggledTimer: (id: number | null) => {
-        const { resetTimer, createAndStartTimer, mode } = get();
+                resetTimer();
+                createAndStartTimer(id);
+            },
+            resetCreateToggledTimer: (id: number | null) => {
+                const { resetTimer, createAndStartTimer, mode } = get();
 
-        set(() => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
+                set(() => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
 
-        resetTimer();
-        createAndStartTimer(id);
-    },
-}));
+                resetTimer();
+                createAndStartTimer(id);
+            },
+        }),
+        {
+            name: "time-storage",
+            partialize: (state) =>
+                Object.fromEntries(
+                    Object.entries(state).filter(([key]) => key !== "intervalId" && key !== "isRunning")
+                ),
+        }
+    )
+);

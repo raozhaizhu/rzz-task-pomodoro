@@ -19,6 +19,7 @@ export default function ShiftingCountdown({ hours, minutes, seconds, currentProj
 
     return (
         <>
+            {/* 自动行为切换 */}
             <ToggleGroup type="single" className="flex ml-auto mr-4" value={toggleBehavior}>
                 {TOGGLE_BEHAVIOR.map((behavior) => (
                     <ToggleGroupItem
@@ -34,10 +35,12 @@ export default function ShiftingCountdown({ hours, minutes, seconds, currentProj
                     </ToggleGroupItem>
                 ))}
             </ToggleGroup>
-
+            {/* 任务标题和计时器 */}
             <section className=" dark:bg-black bg-white dark:text-white text-black flex flex-col items-center justify-center p-4 transition-colors duration-500">
                 <div>
-                    <p className="font-mono font-bold text-2xl mb-2">{currentProject?.title ?? "NONE"}</p>
+                    <p className="font-mono font-bold text-2xl lg:text-4xl xl:text-6xl mb-2 lg:mb-6 text-center">
+                        {currentProject?.title ?? "NONE"}
+                    </p>
                     <p className="font-mono font-bold text-2xl text-center">
                         {currentProject ? `${currentProject.completedTimes} / ` : ""}
                         {currentProject?.targetTimes ?? ""}

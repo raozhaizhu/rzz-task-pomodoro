@@ -11,16 +11,23 @@ function getLocalDateString() {
 export const cardInfoSchemaClient = z.object({
     id: z.number().int().min(0, { message: "The id number must be greater than 0" }),
 
-    title: z.string().trim().min(1, { message: "Title is required" }),
+    title: z
+        .string()
+        .trim()
+        .min(1, { message: "Title is required" })
+        .max(30, { message: "The length of title can't exceed 30 characters" }),
     description: z
         .string()
         .trim()
         .max(300, { message: "The length of description can't exceed 300 characters" })
         .optional(),
-    remark: z.string().trim().max(300, { message: "The length of remark can't exceed 300 characters" }).optional(),
+
+    remark: z.string().trim().max(200, { message: "The length of remark can't exceed 200 characters" }).optional(),
+    tags: z.string().trim().max(35, { message: "The target of times be can't exceed 35 times" }).optional(),
 
     workingMinutes: z
         .number()
+        // HACK 这是测试环境的设置,部署后需要改回来
         // .int()
         // .min(1, { message: "It can't be smaller than 1" })
         .max(1439, { message: "It can't be bigger than 1439" }),
@@ -35,8 +42,6 @@ export const cardInfoSchemaClient = z.object({
         .int()
         .min(1, { message: "The target of times must be greater than 0" })
         .max(24, { message: "The target of times be can't exceed 24 times" }),
-
-    tags: z.string().trim().optional(),
 });
 // .refine((data) => data.completedTimes <= data.targetTimes, {
 //     path: ["completedTimes"],

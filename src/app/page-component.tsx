@@ -64,7 +64,8 @@ const HomePageComponent = () => {
 
     return (
         <section className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background mb-4">
-            <SpringMotion modeAndCountingTask={`${mode + countingTask}`} className="mb-12 lg:mb-24 mt-12">
+            {/* 动效文字 */}
+            <SpringMotion modeAndCountingTask={`${mode + countingTask}`} className="my-6 lg:my-18">
                 <span
                     className="pointer-events-none whitespace-pre-wrap 
             bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-4xl lg:text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10"
@@ -73,9 +74,9 @@ const HomePageComponent = () => {
                 </span>
             </SpringMotion>
             <Particles className="absolute inset-0" quantity={100} ease={80} color={color} refresh />
-            <section className=" container md:mx-auto flex flex-col justify-center items-center gap-4 ">
+            <section className=" container mx-auto flex flex-col justify-center items-center gap-4 ">
                 {/* ANCHOR 倒计时UI + 按钮组*/}
-                <Card className="min-w-xs sm:w-sm md:w-md lg:w-lg xl:w-xl">
+                <Card className="min-w-xs sm:w-sm md:w-md lg:w-lg xl:w-xl lg:mb-12">
                     {/* ANCHOR 倒计时UI */}
                     <ShiftingCountdown
                         hours={hours}
@@ -123,7 +124,7 @@ const HomePageComponent = () => {
                             completedTimes,
                             targetTimes,
                         }) => (
-                            <Card className="w-xs flex flex-col" key={`card-${id}`}>
+                            <Card className="w-xs flex flex-col max-h-80 overflow-hidden " key={`card-${id}`}>
                                 <CardHeader className="relative flex-none">
                                     <CardTitle>{title}</CardTitle>
                                     <div className="absolute right-4 top-0 flex gap-1">
@@ -144,7 +145,7 @@ const HomePageComponent = () => {
                                 </CardHeader>
 
                                 <CardContent className="flex-1 flex flex-col">
-                                    <p className="text-black/75 mb-2 whitespace-pre-line">
+                                    <p className="text-black/75 mb-2  whitespace-pre-line">
                                         {description && description.length > 100
                                             ? `${description.slice(0, 100)}...`
                                             : description}
@@ -160,7 +161,7 @@ const HomePageComponent = () => {
                                         </div>
                                     )}
                                     {tags && tags.length > 0 && (
-                                        <div className="w-full flex justify-end gap-2 mt-auto">
+                                        <div className="w-full flex flex-wrap justify-end gap-1 mt-auto">
                                             {divideStringByCommaSpace(tags).map((tag, index) => (
                                                 <Badge variant="outline" key={`tag-${index}`}>
                                                     {tag}
@@ -234,16 +235,8 @@ const HomePageComponent = () => {
                 {/* TODO 做一个给我买咖啡功能 */}
             </section>
             <TaskDialog showDialog={showDialog} setShowDialog={setShowDialog} intervalId={intervalId} />
-        </section>
-    );
-};
-export default HomePageComponent;
-
-{
-    /* ANCHOR 测试信息 */
-}
-{
-    /* <div className="flex flex-col items-center gap-4">
+            {/* TEST PART */}
+            {/* <div className="flex flex-col items-center gap-4">
                 {isRunning ? <div>isRunning</div> : <div>notRunning</div>}
                 {canNotModify ? <div>interval</div> : <div>no interval</div>}
                 <div className="text-4xl font-bold">
@@ -252,15 +245,10 @@ export default HomePageComponent;
                     Seconds
                 </div>
                 <div>Now {mode}ING </div>
-                <div>Work Seconds : {workSeconds} S </div>
-                <div>Break Seconds : {breakSeconds} S </div>
                 <div>remainSeconds:{remainSeconds}</div>
-                <div>hour:{hours}</div>
-                <div>minute:{minutes}</div>
-                <div>seconds:{seconds}</div>
-                <div>            {lastResetDate}
-:{            {lastResetDate}
-}</div>
-
-            </div> */
-}
+                <div>{countingTask ?? "no task"}</div>
+            </div> */}
+        </section>
+    );
+};
+export default HomePageComponent;
