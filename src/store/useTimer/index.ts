@@ -1,5 +1,27 @@
 import { create } from "zustand";
 import { Actions, Mode, States } from "./types";
+import { useTasks } from "@/store/useTasks";
+
+function handleTimeOut(id: number | null, mode: Mode) {
+    const startWorkSound = new Audio("/sounds/startWork.wav");
+    const startBreakSound = new Audio("/sounds/startBreak.wav");
+
+    const { taskCompletedTimePlus1, tasks } = useTasks.getState();
+
+    if (id !== null) {
+        taskCompletedTimePlus1(id);
+    }
+
+    if (mode === Mode.Work) {
+        startBreakSound.play().catch((e) => {
+            console.warn("Failed to play sound:", e);
+        });
+    } else {
+        startWorkSound.play().catch((e) => {
+            console.warn("Failed to play sound:", e);
+        });
+    }
+}
 
 export const useTimer = create<States & Actions>((set, get) => ({
     isRunning: false,
@@ -7,6 +29,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     // workSeconds: 45 * 60,
     // breakSeconds: 15 * 60,
     // remainSeconds: 45 * 60,
+    // HACK 这里改了测试环境,到时候部署时候记得改回来
     workSeconds: 5,
     breakSeconds: 3,
     remainSeconds: 5,
@@ -16,8 +39,8 @@ export const useTimer = create<States & Actions>((set, get) => ({
         set((state) => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
     },
 
-    createAndStartTimer: () => {
-        const { clearTimer } = get();
+    createAndStartTimer: (id: number | null) => {
+        const { clearTimer, mode } = get();
         // 如果已经有计时器,就返回,不要重复制造计时器
         if (get().intervalId !== null) return;
 
@@ -25,7 +48,10 @@ export const useTimer = create<States & Actions>((set, get) => ({
             if (get().remainSeconds < 1) {
                 // 重新用get调取最新值
                 clearTimer();
-                alert("Time out!"); // TODO 换成function，播放音乐
+                handleTimeOut(id, mode);
+                // TODO 设定全局状态,自动切换分3种,1完全不切换,2仅在1次循环内由工作切换到休息,3一次循环结束后自动切换进入下一次循环
+                set((state) => ({ mode: mode === Mode.Work ? Mode.Break : Mode.Work }));
+
                 return;
             }
             set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
@@ -56,34 +82,34 @@ export const useTimer = create<States & Actions>((set, get) => ({
         }));
     },
 
-    resetAndStartTimer: () => {
+    resetAndStartTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
         resetTimer();
-        createAndStartTimer();
+        createAndStartTimer(id);
     },
 
-    resetCreateWorkTimer: () => {
+    resetCreateWorkTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
 
         set((state) => ({ mode: Mode.Work }));
 
         resetTimer();
-        createAndStartTimer();
+        createAndStartTimer(id);
     },
-    resetCreateBreakTimer: () => {
+    resetCreateBreakTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
 
         set((state) => ({ mode: Mode.Break }));
 
         resetTimer();
-        createAndStartTimer();
+        createAndStartTimer(id);
     },
-    resetCreateToggledTimer: () => {
+    resetCreateToggledTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer, mode } = get();
 
         set((state) => ({ mode: mode === Mode.Work ? Mode.Break : Mode.Work }));
 
         resetTimer();
-        createAndStartTimer();
+        createAndStartTimer(id);
     },
 }));

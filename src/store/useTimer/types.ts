@@ -25,7 +25,7 @@ export type Actions = {
     /* -------------------------------------------------------------------------- */
     setSeconds: (arg0: number, agr1: number) => void;
 
-    createAndStartTimer: () => void;
+    createAndStartTimer: (id: number | null) => void;
 
     clearTimer: () => void;
     /* -------------------------------------------------------------------------- */
@@ -35,11 +35,11 @@ export type Actions = {
 
     resetTimer: () => void;
 
-    resetAndStartTimer: () => void;
+    resetAndStartTimer: (id: number | null) => void;
 
-    resetCreateWorkTimer: () => void;
+    resetCreateWorkTimer: (id: number | null) => void;
 
-    resetCreateBreakTimer: () => void;
+    resetCreateBreakTimer: (id: number | null) => void;
 
-    resetCreateToggledTimer: () => void;
+    resetCreateToggledTimer: (id: number | null) => void;
 };

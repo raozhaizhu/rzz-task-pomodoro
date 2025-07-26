@@ -1,15 +1,26 @@
 "use client";
 
+import { CardInfoSchemaClient, useTasks } from "@/store/useTasks";
+
 interface Props {
     hours: number;
     minutes: number;
     seconds: number;
+    currentProject: CardInfoSchemaClient | null;
 }
 
-export default function ShiftingCountdown({ hours, minutes, seconds }: Props) {
+export default function ShiftingCountdown({ hours, minutes, seconds, currentProject }: Props) {
+    // const { title, workingMinutes, breakingMinutes, completedTimes, targetTimes } = currentProject;
+
     return (
         <>
-            <section className=" dark:bg-black bg-white dark:text-white text-black flex items-center justify-center p-4 transition-colors duration-500">
+            <section className=" dark:bg-black bg-white dark:text-white text-black flex flex-col items-center justify-center p-4 transition-colors duration-500">
+                <div>
+                    <p className="font-mono font-bold text-2xl mb-2">{currentProject?.title ?? "NONE"}</p>
+                    <p className="font-mono font-bold text-2xl text-center">
+                        {currentProject?.completedTimes ?? ""} / {currentProject?.targetTimes ?? ""}{" "}
+                    </p>
+                </div>
                 <div className="flex w-full max-w-5xl items-center bg-transparent">
                     <CountdownItem unit={String(hours)} label="Hours" />
                     <CountdownItem unit={String(minutes)} label="Minutes" />

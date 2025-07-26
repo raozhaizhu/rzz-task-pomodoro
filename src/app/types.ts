@@ -3,3 +3,5 @@ export enum ActionType {
     EDIT = "Edit",
     DELETE = "Delete",
 }
+
+export type IdActionType = { id: number | null; action: ActionType };

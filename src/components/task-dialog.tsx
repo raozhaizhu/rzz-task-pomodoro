@@ -1,4 +1,4 @@
-import { ActionType } from "@/app/types";
+import { ActionType, IdActionType } from "@/app/types";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -9,23 +9,28 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "./ui/input";
 import { toast } from "sonner";
 import { DialogDescription } from "@radix-ui/react-dialog";
+
 import RzzAlertDialog from "@/components/alert-dialog";
 
+// TODO 忘记了tags的field
 export const TaskDialog = ({
     showDialog,
     setShowDialog,
-    actionType,
+    idActionType,
     currentTask,
+    intervalId,
 }: {
     showDialog: boolean;
     setShowDialog: Dispatch<SetStateAction<boolean>>;
-    actionType: ActionType;
+    idActionType: IdActionType;
     currentTask: number | null;
+    intervalId: NodeJS.Timeout | null;
 }) => {
-    const { getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
+    const { tasks, getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
     const [showAlertDialog, setShowAlertDialog] = useState(false);
 
     const latestId = getLatestId();
+    let message;
 
     const defaultValues: CardInfoSchemaClient = {
         id: latestId + 1,
@@ -36,7 +41,7 @@ export const TaskDialog = ({
         breakingMinutes: 15,
         completedTimes: 0,
         targetTimes: 3,
-        tags: [],
+        tags: "",
     };
 
     const form = useForm<CardInfoSchemaClient>({
@@ -46,22 +51,20 @@ export const TaskDialog = ({
 
     const { reset } = form;
 
-    let message;
-
     useEffect(() => {
         if (currentTask !== null) {
             const { data, message } = getTask(currentTask);
             reset(data ?? defaultValues);
         } else {
             reset(defaultValues);
-            toast(message);
         }
-    }, [currentTask, getTask, reset]);
+    }, [currentTask, tasks]);
 
     const isSubmitting = form.formState.isSubmitting;
+    const canNotModify = intervalId !== null || isSubmitting || idActionType.action === ActionType.DELETE;
 
-    const onSubmit = (data: CardInfoSchemaClient) => {
-        switch (actionType) {
+    const onSubmit = (data: any) => {
+        switch (idActionType.action) {
             case ActionType.ADD: {
                 const { message } = addTask(data);
                 toast(message);
@@ -95,9 +98,9 @@ export const TaskDialog = ({
             <Dialog open={showDialog} onOpenChange={setShowDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{actionType} Task</DialogTitle>
+                        <DialogTitle>{idActionType.action} Task</DialogTitle>
                         <DialogDescription className="text-black/70 mt-2">
-                            You are now {actionType.toLowerCase()}ing your task.
+                            You are now {idActionType.action.toLowerCase()}ing your task.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -128,13 +131,15 @@ export const TaskDialog = ({
                                 name="title"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel>Title</FormLabel>
+                                        <FormLabel>
+                                            Title <span className="text-red-700">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Title"
+                                                placeholder="Title"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -149,10 +154,10 @@ export const TaskDialog = ({
                                         <FormLabel>Description</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Description"
+                                                placeholder="Description"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -167,10 +172,28 @@ export const TaskDialog = ({
                                         <FormLabel>Remark</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Remark"
+                                                placeholder="Remark"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="tags"
+                                render={({ field }) => (
+                                    <FormItem className="flex flex-col">
+                                        <FormLabel>Tags</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="study,guitar 45/15 <-- divide tags by comma or space"
+                                                {...field}
+                                                className="col-span-3"
+                                                disabled={canNotModify}
                                             />
                                         </FormControl>
                                         <FormMessage />
@@ -182,13 +205,14 @@ export const TaskDialog = ({
                                 name="workingMinutes"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel>Working Minutes</FormLabel>
+                                        <FormLabel>
+                                            Working Minutes <span className="text-red-700">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Working Minutes"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
                                                 type="number"
                                                 onChange={(e) => field.onChange(e.target.valueAsNumber)}
                                             />
@@ -202,13 +226,14 @@ export const TaskDialog = ({
                                 name="breakingMinutes"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel>Breaking Minutes</FormLabel>
+                                        <FormLabel>
+                                            Breaking Minutes <span className="text-red-700">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Breaking Minutes"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
                                                 type="number"
                                                 onChange={(e) => field.onChange(e.target.valueAsNumber)}
                                             />
@@ -222,13 +247,14 @@ export const TaskDialog = ({
                                 name="completedTimes"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel>Completed Times</FormLabel>
+                                        <FormLabel>
+                                            Completed Times <span className="text-red-700">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Completed Times"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
                                                 type="number"
                                                 onChange={(e) => field.onChange(e.target.valueAsNumber)}
                                             />
@@ -242,13 +268,14 @@ export const TaskDialog = ({
                                 name="targetTimes"
                                 render={({ field }) => (
                                     <FormItem className="flex flex-col">
-                                        <FormLabel>Target Times</FormLabel>
+                                        <FormLabel>
+                                            Target Times <span className="text-red-700">*</span>
+                                        </FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="Enter Target Times"
                                                 {...field}
                                                 className="col-span-3"
-                                                disabled={isSubmitting || actionType === ActionType.DELETE}
+                                                disabled={canNotModify}
                                                 type="number"
                                                 onChange={(e) => field.onChange(e.target.valueAsNumber)}
                                             />
@@ -266,9 +293,9 @@ export const TaskDialog = ({
                                 <Button
                                     type="submit"
                                     className="w-24"
-                                    variant={actionType === ActionType.DELETE ? "destructive" : "default"}
+                                    variant={idActionType.action === ActionType.DELETE ? "destructive" : "default"}
                                 >
-                                    {actionType}
+                                    {idActionType.action}
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -283,3 +310,5 @@ export const TaskDialog = ({
         </>
     );
 };
+
+export default TaskDialog;
