@@ -3,20 +3,14 @@
 import { useEffect, useState } from "react";
 
 export function useWindowSize() {
-    const [size, setSize] = useState({
-        width: typeof window !== "undefined" ? window.innerWidth : 0,
-        height: typeof window !== "undefined" ? window.innerHeight : 0,
-    });
+    const [size, setSize] = useState<{ width?: number; height?: number }>({});
 
     useEffect(() => {
-        const handleResize = () => {
-            setSize({
-                width: window.innerWidth,
-                height: window.innerHeight,
-            });
-        };
+        function handleResize() {
+            setSize({ width: window.innerWidth, height: window.innerHeight });
+        }
 
-        handleResize(); // 初始化
+        handleResize();
 
         window.addEventListener("resize", handleResize);
         return () => window.removeEventListener("resize", handleResize);

@@ -13,7 +13,8 @@ interface SpringMotionProps {
 
 const SpringMotion = ({ children, className, modeAndCountingTask }: SpringMotionProps) => {
     const { width } = useWindowSize();
-    const responsiveY = width < 768 ? 15 : 50;
+
+    const responsiveY = width !== undefined && width < 768 ? 15 : 50;
 
     return (
         <>

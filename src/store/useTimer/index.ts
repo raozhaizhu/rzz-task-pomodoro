@@ -7,8 +7,7 @@ function handleTimeOut(id: number | null, mode: Mode) {
     const startBreakSound = new Audio("/sounds/startBreak.wav");
 
     const { setCompletedTimePlus1 } = useTasks.getState();
-    const { switchMode, resetCreateBreakTimer, toggleBehavior, clearTimer, resetTimer, resetAndStartTimer } =
-        useTimer.getState();
+    const { switchMode, resetCreateBreakTimer, toggleBehavior, clearTimer, resetAndStartTimer } = useTimer.getState();
 
     if (id !== null) {
         setCompletedTimePlus1(id);
@@ -56,7 +55,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     toggleBehavior: ToggleBehavior.AUTO,
 
     setToggleBehavior: (behavior: ToggleBehavior) => {
-        set((state) => ({ toggleBehavior: behavior }));
+        set(() => ({ toggleBehavior: behavior }));
     },
 
     switchMode: () => {
@@ -66,7 +65,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     },
 
     setSeconds: (workSeconds: number, breakSeconds: number) => {
-        set((state) => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
+        set(() => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
     },
 
     createAndStartTimer: (id: number | null) => {
@@ -83,7 +82,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
             set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
         }, 1000);
 
-        set((state) => ({ intervalId: intervalId, isRunning: true }));
+        set(() => ({ intervalId: intervalId, isRunning: true }));
     },
 
     clearTimer: () => {
@@ -91,12 +90,12 @@ export const useTimer = create<States & Actions>((set, get) => ({
         // 如果没有计时器,直接返回
         if (!intervalId) return;
         clearInterval(intervalId);
-        set((state) => ({ intervalId: null, isRunning: false }));
+        set(() => ({ intervalId: null, isRunning: false }));
     },
 
     pauseTimer: () => {
         get().clearTimer();
-        set((state) => ({ isRunning: true }));
+        set(() => ({ isRunning: true }));
     },
 
     resetTimer: () => {
@@ -117,7 +116,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     resetCreateWorkTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
 
-        set((state) => ({ mode: Mode.WORK }));
+        set(() => ({ mode: Mode.WORK }));
 
         resetTimer();
         createAndStartTimer(id);
@@ -125,7 +124,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     resetCreateBreakTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
 
-        set((state) => ({ mode: Mode.BREAK }));
+        set(() => ({ mode: Mode.BREAK }));
 
         resetTimer();
         createAndStartTimer(id);
@@ -133,7 +132,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     resetCreateToggledTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer, mode } = get();
 
-        set((state) => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
+        set(() => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
 
         resetTimer();
         createAndStartTimer(id);

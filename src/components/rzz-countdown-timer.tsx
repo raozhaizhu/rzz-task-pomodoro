@@ -39,7 +39,8 @@ export default function ShiftingCountdown({ hours, minutes, seconds, currentProj
                 <div>
                     <p className="font-mono font-bold text-2xl mb-2">{currentProject?.title ?? "NONE"}</p>
                     <p className="font-mono font-bold text-2xl text-center">
-                        {currentProject?.completedTimes ?? ""} / {currentProject?.targetTimes ?? ""}{" "}
+                        {currentProject ? `${currentProject.completedTimes} / ` : ""}
+                        {currentProject?.targetTimes ?? ""}
                     </p>
                 </div>
                 <div className="flex w-full max-w-5xl items-center bg-transparent">

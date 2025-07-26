@@ -59,8 +59,8 @@ function useTimer(unit: string) {
     }, []);
 
     const handleCountdown = async () => {
-        const end: any = new Date(COUNTDOWN_FROM);
-        const now: any = new Date();
+        const end: number = new Date(COUNTDOWN_FROM).getTime();
+        const now: number = Date.now();
         const distance = end - now;
 
         let newTime = 0;

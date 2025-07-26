@@ -63,7 +63,7 @@ export const useTasks = create<States & Actions>()(
                 {
                     id: 1,
                     title: "Title",
-                    description: "Description\n↗️ minutes-icon / remark-icon\n↘️ delete / edit / start",
+                    description: "Description \n\u2197 minutes-icon / remark-icon \n\u2198 delete / edit / start",
                     tags: "tag1 tag2 tag3",
                     remark: "Remark(optional)",
                     workingMinutes: 25,
@@ -78,15 +78,15 @@ export const useTasks = create<States & Actions>()(
             editingStatus: EditingStatus.ADD,
 
             setCountingTask: (id: number | null) => {
-                set((state) => ({ countingTask: id }));
+                set(() => ({ countingTask: id }));
             },
 
             setEditingTask: (id: number | null) => {
-                set((state) => ({ editingTask: id }));
+                set(() => ({ editingTask: id }));
             },
 
             setEditingStatus: (status: EditingStatus) => {
-                set((state) => ({ editingStatus: status }));
+                set(() => ({ editingStatus: status }));
             },
 
             checkIfTheTaskExist: (id: number) => {
@@ -126,7 +126,7 @@ export const useTasks = create<States & Actions>()(
             },
 
             editTask: (cardInfo: CardInfoSchemaClient): TasksResponse => {
-                const { id, completedTimes, targetTimes } = cardInfo;
+                const { id } = cardInfo;
                 if (!get().checkIfTheTaskExist(id)) return { success: false, message: "The task has not been created" };
 
                 set((state) => ({

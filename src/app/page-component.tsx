@@ -33,14 +33,13 @@ const HomePageComponent = () => {
         setSeconds,
         createAndStartTimer,
         pauseTimer,
-        clearTimer,
+        // clearTimer,
         resetAndStartTimer,
         resetCreateWorkTimer,
         resetCreateBreakTimer,
     } = useTimer();
 
-    const { tasks, getTask, setEditingTask, countingTask, setCountingTask, setEditingStatus, lastResetDate } =
-        useTasks();
+    const { tasks, getTask, setEditingTask, countingTask, setCountingTask, setEditingStatus } = useTasks();
 
     // ANCHOR 状态
     const { theme } = useTheme();

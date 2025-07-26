@@ -52,12 +52,12 @@ export const TaskDialog = ({
         } else {
             reset(defaultValues);
         }
-    }, [editingTask, tasks]);
+    }, [editingTask]);
 
     const isSubmitting = form.formState.isSubmitting;
     const canNotModify = intervalId !== null || isSubmitting || editingStatus === EditingStatus.DELETE;
 
-    const onSubmit = (data: any) => {
+    const onSubmit = (data: CardInfoSchemaClient) => {
         switch (editingStatus) {
             case EditingStatus.ADD: {
                 const { message } = addTask(data);
@@ -91,7 +91,9 @@ export const TaskDialog = ({
             <Dialog open={showDialog} onOpenChange={setShowDialog}>
                 <DialogContent className="max-h-[calc(100vh-100px)] overflow-auto">
                     <DialogHeader>
-                        <DialogTitle>{editingStatus} Task</DialogTitle>
+                        <DialogTitle>
+                            {editingStatus.charAt(0).toUpperCase() + editingStatus.slice(1).toLowerCase()} Task
+                        </DialogTitle>
                         <DialogDescription className="text-black/70 mt-2">
                             You are now {editingStatus.toLowerCase()}ing your task.
                         </DialogDescription>
