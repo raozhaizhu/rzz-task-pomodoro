@@ -21,7 +21,7 @@ export const TaskDialog = ({
     setShowDialog: Dispatch<SetStateAction<boolean>>;
     intervalId: NodeJS.Timeout | null;
 }) => {
-    const { tasks, editingTask, editingStatus, getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
+    const { editingTask, editingStatus, getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
     const [showAlertDialog, setShowAlertDialog] = useState(false);
 
     const latestId = getLatestId();
