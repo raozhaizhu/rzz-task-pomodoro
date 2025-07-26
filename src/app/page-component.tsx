@@ -74,9 +74,9 @@ const HomePageComponent = () => {
                 </span>
             </SpringMotion>
             <Particles className="absolute inset-0" quantity={100} ease={80} color={color} refresh />
-            <section className=" container mx-auto flex flex-col justify-center items-center gap-4 ">
+            <section className=" container px-4 md:px-0 mx-auto flex flex-col justify-center items-center gap-4 ">
                 {/* ANCHOR 倒计时UI + 按钮组*/}
-                <Card className="min-w-xs sm:w-sm md:w-md lg:w-lg xl:w-xl lg:mb-12">
+                <Card className="w-full md:w-1/2 lg:mb-12">
                     {/* ANCHOR 倒计时UI */}
                     <ShiftingCountdown
                         hours={hours}
@@ -124,7 +124,7 @@ const HomePageComponent = () => {
                             completedTimes,
                             targetTimes,
                         }) => (
-                            <Card className="w-xs flex flex-col max-h-80 overflow-hidden " key={`card-${id}`}>
+                            <Card className="w-full md:flex-1 flex flex-col overflow-hidden " key={`card-${id}`}>
                                 <CardHeader className="relative flex-none">
                                     <CardTitle>{title}</CardTitle>
                                     <div className="absolute right-4 top-0 flex gap-1">
@@ -220,7 +220,7 @@ const HomePageComponent = () => {
                         )
                     )}
                     {/* 空白卡片,用于增加新任务 */}
-                    <Card className="w-xs flex justify-center items-center">
+                    <Card className="w-full md:flex-1  flex justify-center items-center">
                         <IoAddOutline
                             size={28}
                             className="cursor-pointer"
