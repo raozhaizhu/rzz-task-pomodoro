@@ -6,68 +6,81 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { ToggleBehavior } from "@/store/useTimer/types";
 
 interface Props {
-    hours: number;
-    minutes: number;
-    seconds: number;
-    currentProject: CardInfoSchemaClient | null;
+  hours: number;
+  minutes: number;
+  seconds: number;
+  currentProject: CardInfoSchemaClient | null;
 }
 
-const TOGGLE_BEHAVIOR = [ToggleBehavior.MANUAL, ToggleBehavior.AUTO, ToggleBehavior.LOOP];
+const TOGGLE_BEHAVIOR = [
+  ToggleBehavior.MANUAL,
+  ToggleBehavior.AUTO,
+  ToggleBehavior.LOOP,
+];
 
-export default function ShiftingCountdown({ hours, minutes, seconds, currentProject }: Props) {
-    const { toggleBehavior, setToggleBehavior } = useTimer();
+export default function ShiftingCountdown({
+  hours,
+  minutes,
+  seconds,
+  currentProject,
+}: Props) {
+  const { toggleBehavior, setToggleBehavior } = useTimer();
 
-    return (
-        <>
-            {/* 自动行为切换 */}
-            <ToggleGroup type="single" className="flex ml-auto mr-4" value={toggleBehavior}>
-                {TOGGLE_BEHAVIOR.map((behavior) => (
-                    <ToggleGroupItem
-                        key={behavior}
-                        variant="outline"
-                        value={behavior}
-                        className={`text-xs ${behavior === "MANUAL" ? "flex-1" : "flex-none"}`}
-                        onClick={() => {
-                            setToggleBehavior(behavior);
-                        }}
-                    >
-                        {behavior}
-                    </ToggleGroupItem>
-                ))}
-            </ToggleGroup>
-            {/* 任务标题和计时器 */}
-            <section className=" dark:bg-black bg-white dark:text-white text-black flex flex-col items-center justify-center p-4 transition-colors duration-500">
-                <div>
-                    <p className="font-mono font-bold text-2xl lg:text-4xl xl:text-6xl mb-2 lg:mb-6 text-center">
-                        {currentProject?.title ?? "NONE"}
-                    </p>
-                    <p className="font-mono font-bold text-2xl text-center">
-                        {currentProject ? `${currentProject.completedTimes} / ` : ""}
-                        {currentProject?.targetTimes ?? ""}
-                    </p>
-                </div>
-                <div className="flex w-full max-w-5xl items-center bg-transparent">
-                    <CountdownItem unit={String(hours)} label="Hours" />
-                    <CountdownItem unit={String(minutes)} label="Minutes" />
-                    <CountdownItem unit={String(seconds)} label="Seconds" />
-                </div>
-            </section>
-        </>
-    );
+  return (
+    <>
+      {/* 自动行为切换 */}
+      <ToggleGroup
+        type="single"
+        className="flex ml-auto mr-4"
+        value={toggleBehavior}
+      >
+        {TOGGLE_BEHAVIOR.map((behavior) => (
+          <ToggleGroupItem
+            key={behavior}
+            variant="outline"
+            value={behavior}
+            className={`text-xs ${behavior === "MANUAL" ? "flex-1" : "flex-none"}`}
+            onClick={() => {
+              setToggleBehavior(behavior);
+            }}
+          >
+            {behavior}
+          </ToggleGroupItem>
+        ))}
+      </ToggleGroup>
+      {/* 任务标题和计时器 */}
+      <section className="flex flex-col items-center justify-center p-4 transition-colors duration-500">
+        <div>
+          <p className="font-mono font-bold text-2xl lg:text-4xl xl:text-6xl mb-2 lg:mb-6 text-center">
+            {currentProject?.title ?? "NONE"}
+          </p>
+          <p className="font-mono font-bold text-2xl text-center">
+            {currentProject ? `${currentProject.completedTimes} / ` : ""}
+            {currentProject?.targetTimes ?? ""}
+          </p>
+        </div>
+        <div className="flex w-full max-w-5xl items-center bg-transparent">
+          <CountdownItem unit={String(hours)} label="Hours" />
+          <CountdownItem unit={String(minutes)} label="Minutes" />
+          <CountdownItem unit={String(seconds)} label="Seconds" />
+        </div>
+      </section>
+    </>
+  );
 }
 
 function CountdownItem({ unit, label }: { unit: string; label: string }) {
-    return (
-        <div className="flex flex-1 flex-col items-center justify-center gap-1 px-4 py-6 md:gap-2 md:py-8">
-            <div className="relative w-full overflow-hidden text-center">
-                <span className="block text-3xl font-mono font-semibold dark:text-white text-black md:text-5xl lg:text-7xl transition-colors duration-500">
-                    {Number(unit) < 10 ? `0${unit}` : unit}
-                </span>
-            </div>
-            <span className="text-sm font-light dark:text-gray-400 text-gray-500 md:text-base lg:text-lg transition-colors duration-500">
-                {label}
-            </span>
-            <div className="h-px w-full dark:bg-gray-700 bg-gray-300 mt-4 transition-colors duration-500"></div>
-        </div>
-    );
+  return (
+    <div className="flex flex-1 flex-col items-center justify-center gap-1 px-4 py-6 md:gap-2 md:py-8">
+      <div className="relative w-full overflow-hidden text-center">
+        <span className="block text-3xl font-mono font-semibold dark:text-white text-black md:text-5xl lg:text-7xl transition-colors duration-500">
+          {Number(unit) < 10 ? `0${unit}` : unit}
+        </span>
+      </div>
+      <span className="text-sm font-light dark:text-gray-400 text-gray-500 md:text-base lg:text-lg transition-colors duration-500">
+        {label}
+      </span>
+      <div className="h-px w-full dark:bg-gray-700 bg-gray-300 mt-4 transition-colors duration-500"></div>
+    </div>
+  );
 }
