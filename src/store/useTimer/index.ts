@@ -1,18 +1,20 @@
 import { create } from "zustand";
-import { Actions, Mode, States } from "./types";
+import { Actions, Mode, States, ToggleBehavior } from "./types";
 import { useTasks } from "@/store/useTasks";
-
+// 处理,时间到了以后,提高次数,切换状态,重设时间,播放音效
 function handleTimeOut(id: number | null, mode: Mode) {
     const startWorkSound = new Audio("/sounds/startWork.wav");
     const startBreakSound = new Audio("/sounds/startBreak.wav");
 
-    const { taskCompletedTimePlus1, tasks } = useTasks.getState();
+    const { setCompletedTimePlus1 } = useTasks.getState();
+    const { switchMode, resetCreateBreakTimer, toggleBehavior, clearTimer, resetTimer, resetAndStartTimer } =
+        useTimer.getState();
 
     if (id !== null) {
-        taskCompletedTimePlus1(id);
+        setCompletedTimePlus1(id);
     }
 
-    if (mode === Mode.Work) {
+    if (mode === Mode.WORK) {
         startBreakSound.play().catch((e) => {
             console.warn("Failed to play sound:", e);
         });
@@ -21,11 +23,28 @@ function handleTimeOut(id: number | null, mode: Mode) {
             console.warn("Failed to play sound:", e);
         });
     }
+    // 如果是MANUAL,就清除计时器,但是不切换MODE(工作状态)
+    if (toggleBehavior === ToggleBehavior.MANUAL) {
+        clearTimer();
+    }
+    // 如果是AUTO,当Mode为Work的时候,切换一次,清除计时器并开始休息
+    // 当Mode为Break的时候,不切换,仅清除计时器
+    else if (toggleBehavior === ToggleBehavior.AUTO) {
+        if (mode === Mode.WORK) {
+            resetCreateBreakTimer(id);
+        } else {
+            clearTimer();
+        }
+    }
+    // 如果是LOOP,每次都切换
+    else {
+        switchMode();
+        resetAndStartTimer(id);
+    }
 }
-
 export const useTimer = create<States & Actions>((set, get) => ({
     isRunning: false,
-    mode: Mode.Work,
+    mode: Mode.WORK,
     // workSeconds: 45 * 60,
     // breakSeconds: 15 * 60,
     // remainSeconds: 45 * 60,
@@ -34,24 +53,31 @@ export const useTimer = create<States & Actions>((set, get) => ({
     breakSeconds: 3,
     remainSeconds: 5,
     intervalId: null,
+    toggleBehavior: ToggleBehavior.AUTO,
+
+    setToggleBehavior: (behavior: ToggleBehavior) => {
+        set((state) => ({ toggleBehavior: behavior }));
+    },
+
+    switchMode: () => {
+        const { mode } = get();
+
+        set(() => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
+    },
 
     setSeconds: (workSeconds: number, breakSeconds: number) => {
         set((state) => ({ workSeconds: workSeconds, breakSeconds: breakSeconds }));
     },
 
     createAndStartTimer: (id: number | null) => {
-        const { clearTimer, mode } = get();
+        const { mode } = get();
         // 如果已经有计时器,就返回,不要重复制造计时器
         if (get().intervalId !== null) return;
 
         const intervalId = setInterval(() => {
             if (get().remainSeconds < 1) {
                 // 重新用get调取最新值
-                clearTimer();
                 handleTimeOut(id, mode);
-                // TODO 设定全局状态,自动切换分3种,1完全不切换,2仅在1次循环内由工作切换到休息,3一次循环结束后自动切换进入下一次循环
-                set((state) => ({ mode: mode === Mode.Work ? Mode.Break : Mode.Work }));
-
                 return;
             }
             set((state) => ({ remainSeconds: state.remainSeconds - 1 }));
@@ -78,7 +104,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
         get().clearTimer();
         // 然后重设时间为初始值
         set((state) => ({
-            remainSeconds: state.mode === Mode.Work ? state.workSeconds : state.breakSeconds,
+            remainSeconds: state.mode === Mode.WORK ? state.workSeconds : state.breakSeconds,
         }));
     },
 
@@ -91,7 +117,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     resetCreateWorkTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
 
-        set((state) => ({ mode: Mode.Work }));
+        set((state) => ({ mode: Mode.WORK }));
 
         resetTimer();
         createAndStartTimer(id);
@@ -99,7 +125,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     resetCreateBreakTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer } = get();
 
-        set((state) => ({ mode: Mode.Break }));
+        set((state) => ({ mode: Mode.BREAK }));
 
         resetTimer();
         createAndStartTimer(id);
@@ -107,7 +133,7 @@ export const useTimer = create<States & Actions>((set, get) => ({
     resetCreateToggledTimer: (id: number | null) => {
         const { resetTimer, createAndStartTimer, mode } = get();
 
-        set((state) => ({ mode: mode === Mode.Work ? Mode.Break : Mode.Work }));
+        set((state) => ({ mode: mode === Mode.WORK ? Mode.BREAK : Mode.WORK }));
 
         resetTimer();
         createAndStartTimer(id);

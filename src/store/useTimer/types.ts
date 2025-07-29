@@ -1,17 +1,19 @@
 export enum Mode {
-    Work = "WORK",
-    Break = "BREAK",
+    WORK = "WORK",
+    BREAK = "BREAK",
+}
+
+export enum ToggleBehavior {
+    MANUAL = "MANUAL",
+    AUTO = "AUTO",
+    LOOP = "LOOP",
 }
 
 export type States = {
     isRunning: boolean;
-    /**
-     * Mode {
-    Work = "WORK",
-    Break = "BREAK",
-    }   
-     */
     mode: Mode;
+    toggleBehavior: ToggleBehavior;
+
     workSeconds: number;
     breakSeconds: number;
     remainSeconds: number;
@@ -23,6 +25,10 @@ export type Actions = {
     /* -------------------------------------------------------------------------- */
     /*                                    基础函数                                    */
     /* -------------------------------------------------------------------------- */
+    setToggleBehavior: (behavior: ToggleBehavior) => void;
+
+    switchMode: () => void;
+
     setSeconds: (arg0: number, agr1: number) => void;
 
     createAndStartTimer: (id: number | null) => void;

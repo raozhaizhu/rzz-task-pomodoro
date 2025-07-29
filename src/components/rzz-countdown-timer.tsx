@@ -1,6 +1,9 @@
 "use client";
 
-import { CardInfoSchemaClient, useTasks } from "@/store/useTasks";
+import { CardInfoSchemaClient } from "@/store/useTasks";
+import { useTimer } from "@/store/useTimer";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ToggleBehavior } from "@/store/useTimer/types";
 
 interface Props {
     hours: number;
@@ -9,11 +12,29 @@ interface Props {
     currentProject: CardInfoSchemaClient | null;
 }
 
+const TOGGLE_BEHAVIOR = [ToggleBehavior.MANUAL, ToggleBehavior.AUTO, ToggleBehavior.LOOP];
+
 export default function ShiftingCountdown({ hours, minutes, seconds, currentProject }: Props) {
-    // const { title, workingMinutes, breakingMinutes, completedTimes, targetTimes } = currentProject;
+    const { toggleBehavior, setToggleBehavior } = useTimer();
 
     return (
         <>
+            <ToggleGroup type="single" className="flex ml-auto mr-4" value={toggleBehavior}>
+                {TOGGLE_BEHAVIOR.map((behavior) => (
+                    <ToggleGroupItem
+                        key={behavior}
+                        variant="outline"
+                        value={behavior}
+                        className={`text-xs ${behavior === "MANUAL" ? "flex-1" : "flex-none"}`}
+                        onClick={() => {
+                            setToggleBehavior(behavior);
+                        }}
+                    >
+                        {behavior}
+                    </ToggleGroupItem>
+                ))}
+            </ToggleGroup>
+
             <section className=" dark:bg-black bg-white dark:text-white text-black flex flex-col items-center justify-center p-4 transition-colors duration-500">
                 <div>
                     <p className="font-mono font-bold text-2xl mb-2">{currentProject?.title ?? "NONE"}</p>

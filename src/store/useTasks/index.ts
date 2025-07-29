@@ -2,34 +2,11 @@ import { create } from "zustand";
 import { z } from "zod";
 import { persist } from "zustand/middleware";
 import { format } from "date-fns";
+import { Actions, EditingStatus, States, TasksResponse } from "./types";
 
 function getLocalDateString() {
     return format(new Date(), "yyyy-MM-dd");
 }
-
-export type States = {
-    tasks: CardInfoSchemaClient[]; // Better to nest the array in an object for future expansion
-    lastResetDate: string;
-};
-
-export type Actions = {
-    checkIfTheTaskExist: (id: number) => boolean;
-    checkIfTasksLengthLessThan30: () => boolean;
-    getLatestId: () => number;
-    getTask: (id: number) => TasksResponse;
-    addTask: (cardInfo: CardInfoSchemaClient) => TasksResponse;
-    editTask: (cardInfo: CardInfoSchemaClient) => TasksResponse;
-    deleteTask: (id: number) => TasksResponse;
-    taskCompletedTimePlus1: (id: number) => void;
-    resetIfNewDay: () => void;
-    resetCompletedTimes: () => void;
-};
-
-export type TasksResponse = {
-    success: boolean;
-    message: string;
-    data?: CardInfoSchemaClient;
-};
 
 export const cardInfoSchemaClient = z.object({
     id: z.number().int().min(0, { message: "The id number must be greater than 0" }),
@@ -86,10 +63,10 @@ export const useTasks = create<States & Actions>()(
                 },
                 {
                     id: 1,
-                    title: "Practice Guitar",
-                    description: "I should practice guitar chords for 25 minutes today",
-                    tags: "music,practice,guitar",
-                    remark: "Need to work on the F chord transition",
+                    title: "Title",
+                    description: "Description\n↗️ minutes-icon / remark-icon\n↘️ delete / edit / start",
+                    tags: "tag1 tag2 tag3",
+                    remark: "Remark(optional)",
                     workingMinutes: 25,
                     breakingMinutes: 5,
                     completedTimes: 0,
@@ -97,6 +74,21 @@ export const useTasks = create<States & Actions>()(
                 },
             ],
             lastResetDate: " ",
+            countingTask: null,
+            editingTask: null,
+            editingStatus: EditingStatus.ADD,
+
+            setCountingTask: (id: number | null) => {
+                set((state) => ({ countingTask: id }));
+            },
+
+            setEditingTask: (id: number | null) => {
+                set((state) => ({ editingTask: id }));
+            },
+
+            setEditingStatus: (status: EditingStatus) => {
+                set((state) => ({ editingStatus: status }));
+            },
 
             checkIfTheTaskExist: (id: number) => {
                 const existedTask = get().tasks.some((task) => task.id === id);
@@ -155,7 +147,7 @@ export const useTasks = create<States & Actions>()(
                 return { success: true, message: "The task has been deleted successfully" };
             },
 
-            taskCompletedTimePlus1: (id: number) => {
+            setCompletedTimePlus1: (id: number) => {
                 set((state) => ({
                     tasks: state.tasks.map((task) =>
                         task.id === id ? { ...task, completedTimes: task.completedTimes + 1 } : task
@@ -176,8 +168,6 @@ export const useTasks = create<States & Actions>()(
                     lastResetDate: getLocalDateString(),
                 }));
             },
-
-            // TODO 完成状态持久化
         }),
         {
             name: "task-storage",
@@ -189,6 +179,8 @@ export const useTasks = create<States & Actions>()(
         }
     )
 );
+
+export { EditingStatus };
 // 我认为事务操作依旧是有必要的,进行简单的模拟事务操作,对修改这样危险的行为进行校验,尽管我们可以通过前端Block用户对ID的修改,或者干脆不给他入口
 // 但必要性不大,所以不做了
 // checkIfIdRepeated: () => {

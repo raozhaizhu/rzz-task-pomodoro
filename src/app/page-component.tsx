@@ -14,10 +14,13 @@ import { useTasks } from "@/store/useTasks";
 import { VscDebugStart } from "react-icons/vsc";
 import { VscDebugPause } from "react-icons/vsc";
 import { VscDebugContinue } from "react-icons/vsc";
-import { ActionType, IdActionType } from "./types";
 import { IoAddOutline } from "react-icons/io5";
 
+import { EditingStatus } from "@/store/useTasks/types";
+
 import TaskDialog from "@/components/task-dialog";
+import SpringMotion from "@/components/spring-motion";
+
 import { divideStringByCommaSpace } from "@/utils/divide-string-by-comma-space";
 
 const HomePageComponent = () => {
@@ -35,14 +38,13 @@ const HomePageComponent = () => {
         resetCreateWorkTimer,
         resetCreateBreakTimer,
     } = useTimer();
-    const { tasks, getTask } = useTasks();
+
+    const { tasks, getTask, setEditingTask, countingTask, setCountingTask, setEditingStatus } = useTasks();
 
     // ANCHOR 状态
     const { theme } = useTheme();
     const [color, setColor] = useState("#ffffff");
     const [showDialog, setShowDialog] = useState(false);
-    const [idActionType, setIdActionType] = useState<IdActionType>({ id: null, action: ActionType.ADD }); // 该任务仅用于跟踪当前正在增删查改的任务
-    const [currentTask, setCurrentTask] = useState<number | null>(null); // 该任务仅用于监控当前正在倒计时的任务
 
     // ANCHOR 副作用
     useEffect(() => {
@@ -52,7 +54,7 @@ const HomePageComponent = () => {
     // ANCHOR 衍生计算
     const [hours, minutes, seconds] = getHoursMinutesSeconds(remainSeconds);
     const canNotModify = intervalId !== null;
-    const currentProject = currentTask !== null ? (getTask(currentTask).data ?? null) : null;
+    const currentProject = countingTask !== null ? (getTask(countingTask).data ?? null) : null;
 
     // ANCHOR 处理点击逻辑
     function handleStart(id: number | null, workingSeconds: number, breakingSeconds: number) {
@@ -62,12 +64,14 @@ const HomePageComponent = () => {
 
     return (
         <section className="relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden bg-background">
-            <span
-                className="mb-32 pointer-events-none whitespace-pre-wrap 
+            <SpringMotion modeAndCountingTask={`${mode + countingTask}`} className="mb-24">
+                <span
+                    className="pointer-events-none whitespace-pre-wrap 
             bg-gradient-to-b from-black to-gray-300/80 bg-clip-text text-center text-8xl font-semibold leading-none text-transparent dark:from-white dark:to-slate-900/10"
-            >
-                NOW : {mode}ING
-            </span>
+                >
+                    NOW : {mode}ING
+                </span>
+            </SpringMotion>
             <Particles className="absolute inset-0" quantity={100} ease={80} color={color} refresh />
             <section className=" container mx-auto flex flex-col justify-center items-center gap-4">
                 {/* ANCHOR 倒计时UI + 按钮组*/}
@@ -82,12 +86,12 @@ const HomePageComponent = () => {
 
                     {/* ANCHOR 按钮组 */}
                     <div className="flex gap-2 justify-center">
-                        <Button onClick={() => resetCreateWorkTimer(currentTask)} className="w-24">
+                        <Button onClick={() => resetCreateWorkTimer(countingTask)} className="w-24">
                             Work
                         </Button>
 
                         {!isRunning ? (
-                            <Button onClick={() => resetAndStartTimer(currentTask)} className="w-24">
+                            <Button onClick={() => resetAndStartTimer(countingTask)} className="w-24">
                                 <VscDebugStart />
                             </Button>
                         ) : canNotModify ? (
@@ -95,12 +99,12 @@ const HomePageComponent = () => {
                                 <VscDebugPause />
                             </Button>
                         ) : (
-                            <Button onClick={() => createAndStartTimer(currentTask)} className="w-24">
+                            <Button onClick={() => createAndStartTimer(countingTask)} className="w-24">
                                 <VscDebugContinue />
                             </Button>
                         )}
 
-                        <Button onClick={() => resetCreateBreakTimer(currentTask)} className="w-24">
+                        <Button onClick={() => resetCreateBreakTimer(countingTask)} className="w-24">
                             Break
                         </Button>
                     </div>
@@ -140,7 +144,7 @@ const HomePageComponent = () => {
                                 </CardHeader>
 
                                 <CardContent className="flex-1 flex flex-col">
-                                    <p className="text-black/75 mb-2">
+                                    <p className="text-black/75 mb-2 whitespace-pre-line">
                                         {description && description.length > 100
                                             ? `${description.slice(0, 100)}...`
                                             : description}
@@ -177,7 +181,8 @@ const HomePageComponent = () => {
                                         size="icon"
                                         className="size-8"
                                         onClick={() => {
-                                            setIdActionType(() => ({ id, action: ActionType.DELETE }));
+                                            setEditingStatus(EditingStatus.DELETE);
+                                            setEditingTask(id);
                                             setShowDialog(true);
                                         }}
                                         disabled={canNotModify}
@@ -189,7 +194,8 @@ const HomePageComponent = () => {
                                         size="icon"
                                         className="size-8"
                                         onClick={() => {
-                                            setIdActionType(() => ({ id, action: ActionType.EDIT }));
+                                            setEditingStatus(EditingStatus.EDIT);
+                                            setEditingTask(id);
                                             setShowDialog(true);
                                         }}
                                         disabled={canNotModify}
@@ -201,8 +207,8 @@ const HomePageComponent = () => {
                                         size="icon"
                                         className="size-8"
                                         onClick={() => {
-                                            setCurrentTask(() => id);
-                                            handleStart(currentTask, workingMinutes, breakingMinutes);
+                                            setCountingTask(id);
+                                            handleStart(id, workingMinutes, breakingMinutes);
                                         }}
                                         disabled={canNotModify}
                                     >
@@ -218,8 +224,8 @@ const HomePageComponent = () => {
                             size={28}
                             className="cursor-pointer"
                             onClick={() => {
-                                setCurrentTask(null);
-                                setIdActionType(() => ({ id: null, action: ActionType.EDIT }));
+                                setEditingStatus(EditingStatus.ADD);
+                                setEditingTask(null);
                                 setShowDialog(true);
                             }}
                         />
@@ -227,13 +233,7 @@ const HomePageComponent = () => {
                 </div>
                 {/* TODO 做一个给我买咖啡功能 */}
             </section>
-            <TaskDialog
-                showDialog={showDialog}
-                setShowDialog={setShowDialog}
-                idActionType={idActionType}
-                currentTask={currentTask}
-                intervalId={intervalId}
-            />
+            <TaskDialog showDialog={showDialog} setShowDialog={setShowDialog} intervalId={intervalId} />
         </section>
     );
 };

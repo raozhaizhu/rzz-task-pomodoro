@@ -1,10 +1,10 @@
-import { ActionType, IdActionType } from "@/app/types";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogClose, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { cardInfoSchemaClient, CardInfoSchemaClient, useTasks } from "@/store/useTasks";
+import { EditingStatus } from "@/store/useTasks/types";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "./ui/input";
 import { toast } from "sonner";
@@ -12,25 +12,19 @@ import { DialogDescription } from "@radix-ui/react-dialog";
 
 import RzzAlertDialog from "@/components/alert-dialog";
 
-// TODO 忘记了tags的field
 export const TaskDialog = ({
     showDialog,
     setShowDialog,
-    idActionType,
-    currentTask,
     intervalId,
 }: {
     showDialog: boolean;
     setShowDialog: Dispatch<SetStateAction<boolean>>;
-    idActionType: IdActionType;
-    currentTask: number | null;
     intervalId: NodeJS.Timeout | null;
 }) => {
-    const { tasks, getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
+    const { tasks, editingTask, editingStatus, getLatestId, addTask, editTask, deleteTask, getTask } = useTasks();
     const [showAlertDialog, setShowAlertDialog] = useState(false);
 
     const latestId = getLatestId();
-    let message;
 
     const defaultValues: CardInfoSchemaClient = {
         id: latestId + 1,
@@ -52,35 +46,34 @@ export const TaskDialog = ({
     const { reset } = form;
 
     useEffect(() => {
-        if (currentTask !== null) {
-            const { data, message } = getTask(currentTask);
+        if (editingTask !== null) {
+            const { data } = getTask(editingTask);
             reset(data ?? defaultValues);
         } else {
             reset(defaultValues);
         }
-    }, [currentTask, tasks]);
+    }, [editingTask, tasks]);
 
     const isSubmitting = form.formState.isSubmitting;
-    const canNotModify = intervalId !== null || isSubmitting || idActionType.action === ActionType.DELETE;
+    const canNotModify = intervalId !== null || isSubmitting || editingStatus === EditingStatus.DELETE;
 
     const onSubmit = (data: any) => {
-        switch (idActionType.action) {
-            case ActionType.ADD: {
+        switch (editingStatus) {
+            case EditingStatus.ADD: {
                 const { message } = addTask(data);
                 toast(message);
                 break;
             }
-            case ActionType.EDIT: {
+            case EditingStatus.EDIT: {
                 const { message } = editTask(data);
                 toast(message);
                 break;
             }
-            case ActionType.DELETE: {
-                setShowAlertDialog(true);
+            case EditingStatus.DELETE: {
+                setShowAlertDialog(true); // 外包给alertDialog处理
                 break;
             }
             default:
-                console.log("Invalid action type");
                 break;
         }
 
@@ -98,9 +91,9 @@ export const TaskDialog = ({
             <Dialog open={showDialog} onOpenChange={setShowDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>{idActionType.action} Task</DialogTitle>
+                        <DialogTitle>{editingStatus} Task</DialogTitle>
                         <DialogDescription className="text-black/70 mt-2">
-                            You are now {idActionType.action.toLowerCase()}ing your task.
+                            You are now {editingStatus.toLowerCase()}ing your task.
                         </DialogDescription>
                     </DialogHeader>
 
@@ -293,9 +286,9 @@ export const TaskDialog = ({
                                 <Button
                                     type="submit"
                                     className="w-24"
-                                    variant={idActionType.action === ActionType.DELETE ? "destructive" : "default"}
+                                    variant={editingStatus === EditingStatus.DELETE ? "destructive" : "default"}
                                 >
-                                    {idActionType.action}
+                                    {editingStatus}
                                 </Button>
                             </DialogFooter>
                         </form>
